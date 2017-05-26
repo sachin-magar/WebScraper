@@ -65,7 +65,12 @@ def getCompleteList(mainCategories,categoriesDictionary, url):
                 writer = csv.writer(file)
                 writer.writerow([])
                 writer.writerow([mainCategory+" --> "+subCategory[0]])
-                writer.writerow([" Course Name ", " Course Description "])
+                writer.writerow([" Course Name ",
+                                 " Course Description ",
+                                 " Instructor ",
+                                 " Price ",
+                                 " Rating ",
+                                 " Additional Info "])
 
 
             # add url for all-courses in each category
@@ -89,15 +94,24 @@ def getCompleteList(mainCategories,categoriesDictionary, url):
                 ui_tag = beautifulSoup_object.find("ui-view")
 
                 # Get book name and description from this tags a and p
-                name = ui_tag.findAll("a", {"class": "card__title"})
-                description = ui_tag.findAll("p", {"class": "card__subtitle"})
+                name = ui_tag.findAll("a", {"class": "search-course-card--card__title--2xzHX"})
+                description = ui_tag.findAll("p", {"class": "search-course-card--card__subtitle--2XK_4"})
+                instructor = ui_tag.findAll("a", {"class": "search-course-card--card__instructor-inner--WSVhl"})
+                additional_info = ui_tag.findAll("span", {"class": "search-course-card--card__meta-item--386Cn"})
+                price = ui_tag.findAll("span", {"class": "search-course-card--card__price--37v-D"})
+                ratings = ui_tag.findAll("span", {"class": "search-course-card--review-point--1l0F7"})
 
                 for i in range(len(name)):
                     # print("name: ", name[i].text, " Description: ", description[i].text)
                     with open("output.csv", "a",newline='') as file:
                         try:
                             writer = csv.writer(file)
-                            writer.writerow([name[i].text,description[i].text])
+                            writer.writerow([name[i].text,
+                                             description[i].text,
+                                             instructor[i].text,
+                                             price[i].text,
+                                             ratings[i].text,
+                                             additional_info[i].text])
 
                         except Exception:
                             print ("Incompatible text format")
@@ -105,10 +119,14 @@ def getCompleteList(mainCategories,categoriesDictionary, url):
                 # Break when we reach at the end of pagination else goto next page
                 checkNextPage = ui_tag.find("li", {"ng-class": "{ disabled: !hasNext() }"})
                 pageCount = pageCount + 1
-                if "class" in checkNextPage.attrs:
-                    break
-                else:
-                    newURL = baseURL + "?p=" + str(pageCount)
+
+                try:
+                    if "class" in checkNextPage.attrs:
+                        break
+                    else:
+                        newURL = baseURL + "?p=" + str(pageCount)
+                except Exception:
+                    print ("Pagination error")
 
 
 if __name__ == '__main__':
@@ -126,13 +144,14 @@ if __name__ == '__main__':
     mainCategories, categoriesDictionary = getCategores(url, beautifulSoup_object )
 
     # call getCompleteList() to get entire list
-    # getCompleteList(mainCategories,categoriesDictionary,short_url)
+    getCompleteList(mainCategories,categoriesDictionary,short_url)
 
     # call getTestOutput to check for a sample list
-    testMainCategories = {' Lifestyle ': '/courses/lifestyle/'}
-    testCategoriesDictionary = {' Lifestyle ': {'Pet Care & Training': '/courses/lifestyle/pet-care-and-training/',
-                                                'Home Improvement': '/courses/lifestyle/home-improvement/'} }
+    #testMainCategories = {' Lifestyle ': '/courses/lifestyle/'}
+    #testCategoriesDictionary = {' Lifestyle ': {'Pet Care & Training': '/courses/lifestyle/pet-care-and-training/',
+    #                                            'Home Improvement': '/courses/lifestyle/home-improvement/'} }
+    #testCategoriesDictionary = {' Lifestyle ': {'Pet Care & Training': '/courses/lifestyle/pet-care-and-training/'}}
 
     # get output for sample list
-    getCompleteList(testMainCategories,testCategoriesDictionary,short_url)
+    #getCompleteList(testMainCategories,testCategoriesDictionary,short_url)
 
